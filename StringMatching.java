@@ -1,43 +1,22 @@
-package javaProgramms;
-
 public class StringMatching {
 	//Naive base String Matching Algorithm
 	//Time Complexity O(len(pattern)*len(text))
 	
 	public static String naive_string_matcher(String t,String p ){
-		int len_p=p.length();//get length of pattern
-		int len_t=t.length();//get length of text
-		
-		int counter_one=0;//Outer loop counter
-		int counter_two=0;//Inner loop counter
-		int counter_three=0;//counter for when we scan pattern we need to increment pattern position
-		
-		char[] pat=p.toCharArray();//we convert pattern string to character array
-		char[] tex=t.toCharArray();//same for the text
-		
-		boolean match_found=true;//create boolean for find that math arises
-		
-		while(counter_one<(len_t-len_p+1)) {
-			counter_two=0;
-			match_found=true;
-			
-			while(counter_two<len_p) {
-				if(tex[counter_three]!=pat[counter_two]) {
-					match_found=false;
-					break;//if characters not equal we break from the loop and make boolean false
-				}
-				counter_two++;
-				counter_three++;
+		int m=p.length();//get length of pattern
+		int n=t.length();//get length of text
+						
+		for(int i=0;i<n-m+1;i++) {
+			int j=0;
+			while(j<m&&(t.charAt(i+j)==p.charAt(j))) {
+				j++;//if characters not equal we break from the loop and make boolean false
+			}			
+			if(j==m) {
+				return "Pattern "+p+" found at "+i+" index of text "+t+" using naive based method";
 			}
-			
-			if(match_found) {
-				return "Pattern "+p+" found at "+Integer.toString(counter_one)+" index of text "+t+" using naive based method";
-			}
-			
-			counter_one++;
-			counter_three=counter_one;//we need to check next text character with pattern.
 		}
 		return "Pattern not found";
+		
 	}
 	
 	//KMP Method
@@ -95,9 +74,9 @@ public class StringMatching {
 			}
 		return "Pattern not found";
 	}
-	//Robin-Carp method
+	//Rabin-Carp method
 	
-	public static String robin_carp(String Text,String Pattern,int d,int q) {
+	public static String rabin_carp(String Text,String Pattern,int d,int q) {
 		int n=Text.length();
 		int m=Pattern.length();
 		int h=(int) ((Math.pow(d,m-1))%q);
@@ -133,13 +112,80 @@ public class StringMatching {
 		}
 		return "Pattern not found";
 	}
+	//Boyer_Moore Method
+	public static String boyer_moor(String T,String P) {
+		int n=T.length();//get Text 's length
+		int m=P.length();//get pattern's length
+		
+		int[] last=lastOccurenceFinder(P);
+		
+		int s=0;//initialise shifts to 0
+		
+		while(s<n-m+1) {//while shifts are less than this
+			//System.out.println("s:"+s);
+			int j=m-1;//new variable j use to search from right to left
+			try {//use try block to handle Exceptions
+				while((j>0)&&(P.charAt(j)==T.charAt(s+j))) {//while characters are equal and j is not go beyond 0
+					//System.out.println("P.charAt("+j+"):"+P.charAt(j)+","+"T.charAt("+s+j+")"+T.charAt(s+j));
+					j--;//decrement j and check characters
+				}
+				//System.out.println("j:"+j);
+				//System.out.println("last["+((int)(T.charAt(s+j))-97)+"]:"+last[(int)(T.charAt(s+j))-97]);
+				if(j==0) {//if j=0 then it means j has gone until the end of the match
+					return "matchedAt:"+(s);
+				}
+				else if(last[(int)(T.charAt(s+j))-97]<j) {//if not we take the last occurrence of mismatch
+					if(last[(int)(T.charAt(s+j))-97]==-1) {
+						s++;
+					}
+					else {//if not, increment s by below
+						s=s+j-last[(int)(T.charAt(s+j))-97];
+					}
+				}
+				else {//if last occurrence has passed then we shift only 1
+					s++;
+				}
+				
+			}catch(Exception e) {
+				System.out.println(e);
+				break;
+				
+			}
+			
+		}
+		
+		return "notMatch";
+	}
+	public static int[] lastOccurenceFinder(String P) {//last occurrence place finding method
+		int m=P.length();//takes pattern's length
+		String alphabet= "abcdefghijklmnopqrstuvwxyz";//give the alphabet
+		int[] lastChar=new int[26];//create new array to store last occurrence of each character
+		
+		System.out.print("Last Ocurences Table|");
+		for(int i=0;i<26;i++) {//iterate until 26 letters
+			int j=m-1;//scan from right to find last occurrences
+			while(j>-1&&(alphabet.charAt(i)!=P.charAt(j))) {//loop until character found
+				j--;
+				}
+			lastChar[i]=j;//store the place of character and if character is not in the patterns it stores as -1
+			System.out.print(alphabet.charAt(i)+":"+lastChar[i]+"|");
+			}
+		System.out.println("");
+			
+		return lastChar;//return array 
+	}
 	
 	public static void main(String[] args) {
 		String result=naive_string_matcher("abbabbaaccac","babbaa");
 		System.out.println(result);
+		
 		result=KMP("abbabbaaccac","babbaa");
 		System.out.println(result);
-		result=robin_carp("2359023141526739921","31415",10,13);
+		
+		result=rabin_carp("2359023141526739921","31415",10,13);
+		System.out.println(result);
+		
+		result=boyer_moor("aacababb","babb");
 		System.out.println(result);
 	}
 }
